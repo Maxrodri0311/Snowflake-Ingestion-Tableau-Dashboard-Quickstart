@@ -54,7 +54,7 @@ def test_duckdb_write_marts(prepared_parquet):
     repo = DuckDBContractRepository(db_path=":memory:", raw_data_path=prepared_parquet)
     df = repo.read_contracts(limit=200)
 
-    # Marts sintéticos mínimos
+    # Marts de prueba mínimos
     df_risk = df.copy()
     df_risk["hazard_score"] = 1.0
     df_risk["risk_band"] = "MEDIUM"

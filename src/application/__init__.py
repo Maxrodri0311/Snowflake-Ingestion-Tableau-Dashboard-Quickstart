@@ -1,4 +1,4 @@
-"""Application package for GP-102 Inetum Contract Survival Analytics Engine."""
+"""Application package for Inetum Contract Survival & Lifecycle Analytics Engine."""
 
 from src.application.pipeline import ContractSurvivalPipeline
 

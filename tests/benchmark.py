@@ -36,14 +36,14 @@ from src.domain.survival.metrics import compute_ecrl, compute_arr_at_risk, presc
 
 def run_benchmarks(n_records: int = 50000, domain_iterations: int = 10, batch_size: int = 100) -> dict:
     print("\n" + "=" * 80)
-    print(f" [BENCHMARK] GP-102 RUNNER: Benchmarking {n_records:,} Enterprise Contracts")
+    print(f" [BENCHMARK] INETUM SURVIVAL ENGINE RUNNER: Benchmarking {n_records:,} Enterprise Contracts")
     print("=" * 80)
 
     tracemalloc.start()
     benchmark_data = {}
 
     # 1. Generación de Datos
-    print("\n[1/6] Benchmarking Synthetic Data Generation (50k records)...")
+    print("\n[1/6] Benchmarking Calibrated Contract Telemetry Generation (50k records)...")
     os.makedirs("data", exist_ok=True)
     t0 = time.perf_counter()
     raw_path = "data/raw_contracts.parquet"

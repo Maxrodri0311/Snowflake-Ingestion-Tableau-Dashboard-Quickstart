@@ -1,4 +1,4 @@
-"""Domain package for GP-102 Inetum Contract Survival Analytics Engine."""
+"""Domain package for Inetum Contract Survival & Lifecycle Analytics Engine."""
 
 from src.domain.contracts import (
     ContractTier,

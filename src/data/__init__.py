@@ -1,4 +1,4 @@
-"""Data generator package for GP-102 Inetum Contract Survival Analytics Engine."""
+"""Data generator package for Inetum Contract Survival & Lifecycle Analytics Engine."""
 
 from src.data.data_generator import generate_contract_dataset
 

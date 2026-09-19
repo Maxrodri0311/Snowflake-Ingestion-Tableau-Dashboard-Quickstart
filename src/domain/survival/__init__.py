@@ -1,4 +1,4 @@
-"""Survival analysis engine package for GP-102 Inetum Contract Survival Analytics Engine."""
+"""Survival analysis engine package for Inetum Contract Survival & Lifecycle Analytics Engine."""
 
 from src.domain.survival.km import KaplanMeierEstimator
 from src.domain.survival.cox import CoxPHModel

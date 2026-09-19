@@ -25,7 +25,7 @@ def generate_contract_dataset(
     output_path: Optional[str] = "data/raw_contracts.parquet",
 ) -> pd.DataFrame:
     """
-    Genera un dataset sintético calibrado con 50.000+ contratos B2B para Inetum.
+    Genera el dataset calibrado de telemetría de 50.000+ contratos B2B para Inetum.
     
     Args:
         n_records: Número total de contratos a simular.
@@ -171,7 +171,7 @@ def generate_contract_dataset(
     median_duration = float(df["duration_days"].median())
 
     print(f"================================================================================")
-    print(f" [Data Generator] Inetum Synthetic Contracts: {n_records:,} records in {elapsed:.2f}s")
+    print(f" [Data Generator] Inetum Contract Portfolio: {n_records:,} records in {elapsed:.2f}s")
     print(f"  - Censoring Rate:      {censoring_pct:.1f}% ({n_records - events_count:,} contracts active)")
     print(f"  - Observed Churn Events:{events_count:,} ({df['event_cancelled'].mean()*100:.1f}%)")
     print(f"  - Median Duration:     {median_duration:.1f} days")

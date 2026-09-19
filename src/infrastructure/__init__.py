@@ -1,4 +1,4 @@
-"""Infrastructure package for GP-102 Inetum Contract Survival Analytics Engine."""
+"""Infrastructure package for Inetum Contract Survival & Lifecycle Analytics Engine."""
 
 from src.infrastructure.duckdb_repo import DuckDBContractRepository
 from src.infrastructure.snowflake_adapter import SnowflakeAdapter, generate_snowflake_ddl

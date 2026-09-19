@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 echo ===============================================================================
-echo   INETUM - CONTRACT SURVIVAL AND LIFECYCLE ANALYTICS ENGINE (GP-102)
+echo   INETUM - CONTRACT SURVIVAL AND LIFECYCLE ANALYTICS ENGINE
 echo   Enterprise Production Case Study - Data Analyst / Analytics Engineer
 echo ===============================================================================
 echo.

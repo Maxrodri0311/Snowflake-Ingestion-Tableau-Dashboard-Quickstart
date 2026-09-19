@@ -1,4 +1,4 @@
-# 📐 SPEC & Technical Blueprint: Inetum Contract Survival Analytics Engine (GP-102)
+# 📐 SPEC & Technical Blueprint: Inetum Contract Survival & Lifecycle Analytics Engine
 
 **Empresa Objetivo:** Inetum | **Rol Objetivo:** Data Analyst / Analytics Engineer  
 **Perspectiva de Innovación:** Causal & Survival Lifecycle Analytics (`CAUSAL_SURVIVAL`)  

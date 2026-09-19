@@ -100,7 +100,7 @@ def test_cox_ph_fit_and_concordance(sample_dataset):
 
 def test_ecrl_calculation():
     """Verifica que el ECRL (RMST) está acotado y se comporta adecuadamente."""
-    # Función de supervivencia sintética constante S(t) = 0.8
+    # Función de supervivencia de prueba constante S(t) = 0.8
     constant_surv = lambda t: 0.80
 
     # Para horizonte de 180 días con S(t) constante, ECRL = (0.80 * 180) / 0.80 = 180 días

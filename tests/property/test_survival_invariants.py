@@ -73,9 +73,11 @@ def test_property_boundary_conditions(property_dataset):
 
 def test_property_ecrl_bounds():
     """Propiedad 4: Para cualquier función de supervivencia y edad s, 0 <= ECRL <= H."""
-    # Test sobre múltiples funciones de supervivencia sintéticas
+    # Test sobre múltiples funciones de supervivencia calibradas
+    step_surv = lambda t: 1.0 if t < 100 else (0.5 if t < 300 else 0.1)
     surv_funcs = [
-        lambda t: 1.0,                           # Supervivencia perfecta (inmortal)
+        lambda t: 1.0,                           # Supervivencia constante (sin fallo)
+        step_surv,
         lambda t: 0.0,                           # Supervivencia nula
         lambda t: np.exp(-0.005 * t),            # Decaimiento exponencial
         lambda t: np.clip(1.0 - (t / 500.0), 0, 1), # Decaimiento lineal
