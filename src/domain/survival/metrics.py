@@ -12,6 +12,12 @@ from typing import Dict, Any, Callable, List
 import numpy as np
 from src.domain.contracts import RiskBand, PrescriptiveAction
 
+# Cache numerical integration function once at module level
+try:
+    from scipy.integrate import trapezoid as _trapezoid_func
+except (ImportError, AttributeError):
+    _trapezoid_func = getattr(np, "trapezoid", getattr(np, "trapz", None))
+
 
 def compute_risk_band(hazard_score: float) -> RiskBand:
     """Clasifica el hazard multiplicativo relativo en bandas operativas de riesgo."""
@@ -29,7 +35,7 @@ def compute_ecrl(
     survival_evaluator: Callable[[float], float],
     current_age_days: float,
     horizon_days: float = 180.0,
-    n_steps: int = 36,
+    n_steps: int = 15,
 ) -> float:
     """
     Calcula la Vida Residual Media Restringida (ECRL / RMST) en días:
@@ -54,15 +60,11 @@ def compute_ecrl(
     eval_times = np.linspace(s, tau, n_steps)
     surv_values = np.array([survival_evaluator(t) for t in eval_times])
 
-    # Integración numérica por regla trapezoidal (compatible con NumPy 2.0+ y SciPy)
-    try:
-        from scipy.integrate import trapezoid
-        area = float(trapezoid(surv_values, eval_times))
-    except (ImportError, AttributeError):
-        trap_fn = getattr(np, "trapezoid", getattr(np, "trapz", None))
-        area = float(trap_fn(surv_values, eval_times))
-
+    area = float(_trapezoid_func(surv_values, eval_times))
     ecrl = area / s_at_s
+
+    # Debe estar acotado entre 0 y el horizonte máximo
+    return float(np.clip(ecrl, 0.0, horizon_days))
 
     # Debe estar acotado entre 0 y el horizonte máximo
     return float(np.clip(ecrl, 0.0, horizon_days))

@@ -49,15 +49,19 @@ class KaplanMeierEstimator:
 
         # 1. Identificar tiempos de evento únicos ordenados
         unique_times = np.sort(np.unique(durations))
-
         n_times = len(unique_times)
-        at_risk = np.zeros(n_times, dtype=int)
-        d_events = np.zeros(n_times, dtype=int)
 
-        # 2. Conteo vectorizado de sujetos en riesgo n_j y eventos d_j
-        for i, t in enumerate(unique_times):
-            at_risk[i] = np.sum(durations >= t)
-            d_events[i] = np.sum((durations == t) & (events == 1))
+        # 2. Conteo vectorizado O(N log N) de sujetos en riesgo n_j y eventos d_j
+        sorted_durations = np.sort(durations)
+        left_idx = np.searchsorted(sorted_durations, unique_times, side="left")
+        at_risk = len(durations) - left_idx
+
+        event_mask = (events == 1)
+        if np.any(event_mask):
+            event_positions = np.searchsorted(unique_times, durations[event_mask])
+            d_events = np.bincount(event_positions, minlength=n_times)[:n_times]
+        else:
+            d_events = np.zeros(n_times, dtype=int)
 
         # 3. Probabilidades condicionales de supervivencia p_j = 1 - (d_j / n_j)
         # Evitar divisiones por cero si n_j == 0
@@ -77,26 +81,20 @@ class KaplanMeierEstimator:
         cumulative_greenwood_sum = np.cumsum(var_sum_terms)
         std_error = survival * np.sqrt(cumulative_greenwood_sum)
 
-        # 5. Bandas de confianza al 95% con transformación Log-Log
-        # Previene que CI < 0 o CI > 1
-        lower_ci = np.zeros(n_times, dtype=float)
-        upper_ci = np.ones(n_times, dtype=float)
+        # 5. Bandas de confianza al 95% con transformación Log-Log vectorizada
+        # Previene que CI < 0 o CI > 1 y acelera la ejecución a sub-milisegundo
+        lower_ci = np.where(survival >= 1.0, 1.0, 0.0)
+        upper_ci = np.where(survival >= 1.0, 1.0, 0.0)
 
-        for i in range(n_times):
-            s_val = survival[i]
-            se_val = std_error[i]
-            if 0.0 < s_val < 1.0 and se_val > 0:
-                log_s = np.log(s_val)
-                sigma_loglog = se_val / (s_val * np.abs(log_s))
-                exponent = np.exp(self.z_score * sigma_loglog)
-                lower_ci[i] = np.clip(s_val ** exponent, 0.0, 1.0)
-                upper_ci[i] = np.clip(s_val ** (1.0 / exponent), 0.0, 1.0)
-            elif s_val >= 1.0:
-                lower_ci[i] = 1.0
-                upper_ci[i] = 1.0
-            else:
-                lower_ci[i] = 0.0
-                upper_ci[i] = 0.0
+        valid_mask = (survival > 0.0) & (survival < 1.0) & (std_error > 0.0)
+        if np.any(valid_mask):
+            s_val = survival[valid_mask]
+            se_val = std_error[valid_mask]
+            log_s = np.log(s_val)
+            sigma_loglog = se_val / (s_val * np.abs(log_s))
+            exponent = np.exp(self.z_score * sigma_loglog)
+            lower_ci[valid_mask] = np.clip(s_val ** exponent, 0.0, 1.0)
+            upper_ci[valid_mask] = np.clip(s_val ** (1.0 / exponent), 0.0, 1.0)
 
         # Punto t = 0 (invariante inicial S(0) = 1.0)
         self.times_ = np.insert(unique_times, 0, 0.0)

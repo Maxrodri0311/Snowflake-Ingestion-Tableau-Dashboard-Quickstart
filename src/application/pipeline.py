@@ -125,7 +125,25 @@ class ContractSurvivalPipeline:
         surv_180d = self.cox_model.predict_survival_at_horizon(df, horizon_days=180.0)
         surv_365d = self.cox_model.predict_survival_at_horizon(df, horizon_days=365.0)
 
-        # 5. Calcular métricas financieras y prescriptivas por contrato
+        # 5. Calcular métricas financieras y prescriptivas por contrato (Optimizado con Caching de ECRL a días enteros)
+        records = df.to_dict(orient="records")
+        min_age = int(np.floor(df["duration_days"].min()))
+        max_age = int(np.ceil(df["duration_days"].max()))
+        grid_ages = np.arange(min_age, max_age + 2, dtype=int)
+
+        ecrl_cache = {
+            int(a): round(compute_ecrl(self.global_km.predict_survival, current_age_days=float(a), horizon_days=180.0), 1)
+            for a in grid_ages
+        }
+        cur_surv_cache = {
+            int(a): self.global_km.predict_survival(float(a))
+            for a in grid_ages
+        }
+        horiz_surv_cache = {
+            int(a): self.global_km.predict_survival(float(a + 180))
+            for a in grid_ages
+        }
+
         risk_bands: List[str] = []
         ecrl_list: List[float] = []
         arr_at_risk_180d_list: List[float] = []
@@ -134,25 +152,22 @@ class ContractSurvivalPipeline:
         playbooks: List[str] = []
         stakeholders: List[str] = []
 
-        for i, row in df.iterrows():
+        for i, rec in enumerate(records):
             hs = float(hazard_scores[i])
             risk_band = compute_risk_band(hs)
             risk_bands.append(risk_band.value)
 
-            # ECRL en horizonte 180 días
-            age = float(row["duration_days"])
-            ecrl = compute_ecrl(self.global_km.predict_survival, current_age_days=age, horizon_days=180.0)
-            ecrl_list.append(round(ecrl, 1))
+            age_key = int(round(float(rec["duration_days"])))
+            ecrl = ecrl_cache.get(age_key, 0.0)
+            ecrl_list.append(ecrl)
 
-            # ARR en riesgo
-            arr_val = float(row["arr"])
-            cur_surv = self.global_km.predict_survival(age)
-            horiz_surv = self.global_km.predict_survival(age + 180.0)
+            arr_val = float(rec["arr"])
+            cur_surv = cur_surv_cache.get(age_key, 1.0)
+            horiz_surv = horiz_surv_cache.get(age_key, 0.0)
             arr_risk = compute_arr_at_risk(arr_val, cur_surv, horiz_surv)
             arr_at_risk_180d_list.append(arr_risk)
 
-            # Prescripción operativa
-            act = prescribe_action(row["contract_id"], hs, row.to_dict(), arr_val)
+            act = prescribe_action(rec["contract_id"], hs, rec, arr_val)
             action_codes.append(act.action_code)
             primary_drivers.append(act.primary_driver)
             playbooks.append(act.recommended_playbook)
